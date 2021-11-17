@@ -1,2 +1,2 @@
 # Python
-6.001x
+6.001x introductory course

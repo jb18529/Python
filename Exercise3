@@ -1,0 +1,190 @@
+'''
+Question 1
+Implement a class Word that stores a word (a text string) and whether it is a noun or a verb (a Boolean). It should have the following methods:
+
+    A constructor that takes, in addition to self, two parameters: the word itself (a text string; assume it is in the singular form) and 
+    a Boolean value which is False if it is a noun and True if it is a verb. (Our implementation will support only nouns and verbs.)
+    Function 'plural' which takes no parameters (except self) and returns the plural form of the word. 
+    The assumption is that the plural form of a noun is the word itself with an added 's' at the end, 
+    and the plural of a verb is the original word. For example, the plural of the noun 'apple' is 'apples' whereas the plural of the 
+    verb 'speak' is 'speak'.
+    Function 'is_the_same_as' which, in addition to self, takes one parameter (a text string) and 
+    checks whether this string is equal to the word in its singular or plural form.
+
+The class has to have exactly two instance variables: word and is_verb.
+'''
+
+class Word():
+
+  def __init__(self, word, is_verb):
+    self.word = word
+    self.is_verb = is_verb
+  
+  def plural(self): 
+    if self.is_verb == False:
+      self.word += "s"
+      return self.word 
+    else:
+      return self.word
+  
+  def is_the_same_as(self, check):
+    if self.is_verb == True:
+      if check == self.word:
+        return True
+      else:
+        return False
+    else: 
+      if check == self.word or check == self.plural() or check == self.word[:(len(self.word)-2)]:
+        return True 
+      else:
+        return False
+
+'''
+Question 2
+Implement three classes: Verb, Noun and Dict. 
+The Verb is for representing a verb and the Noun is for representing a noun. 
+Each of the Verb and Noun should take a string as a parameter of the constructor. 
+Assume that this string is the infinitive/singular of the word they represent, e.g. Verb('move') creates an object representing the word 'move'. 
+Also, each of the Verb and Noun should define instance functions get_forms() that return various forms of their word. 
+Assume that verbs have the following forms: infinitive, infinitive with 'ed', infinitive with 'ing' and infinitive with 's', 
+e.g. move, moved, moveing and moves. Note that the second form in this example is 'moved', not 'moveed'; 
+if the verb ends with 'e' then you should only add 'd' to it. Please ignore any other exceptions from this simplified logic. 
+Nouns have two forms: singular and plural (with 's' added).
+
+The Dict should store a list of verbs and nouns; use instance variable 'words' to store this list. 
+It should also have instance method 'add_word' that takes a Verb or Noun object as a parameter and adds it to the list, and 
+instance method 'contains' that takes a string as a parameter and returns True if the given string is a word from the dictionary, in any of its forms. 
+'''
+class Verb(): 
+  def __init__(self, verb_s = ""):
+    self.verb_s = verb_s
+  def get_forms(self): 
+    verb_l = []
+    if self.verb_s[-1] == 'e':
+      verb_l.extend([self.verb_s, (self.verb_s + "d"), (self.verb_s + "ing"), (self.verb_s + "s")])
+      return verb_l
+    else:
+      verb_l.extend([self.verb_s, (self.verb_s + "ed"), (self.verb_s + "ing"), (self.verb_s + "s")])
+      return verb_l
+
+
+class Noun():
+  def __init__(self, noun_s = ""):
+    self.noun_s = noun_s
+  def get_forms(self):
+    noun_l = []
+    noun_l.extend([self.noun_s, (self.noun_s + "s")])
+    return noun_l
+
+
+class Dict(Noun, Verb):
+  def __init__(self):
+    self.words = []
+  def add_word(self, verb_noun):
+    if type(verb_noun) == Noun:
+      self.words.append(verb_noun.get_forms())
+      return self.words
+    elif type(verb_noun) == Verb:
+      self.words.append(verb_noun.get_forms())
+      return self.words
+  def contains(self, test): 
+    for dictionary in self.words:
+      for word in dictionary:
+        if test == word:
+          return True 
+    return False
+
+'''
+Question 3
+Implement classes WordFamily and Pattern. 
+The WordFamily class will represent a family of words and the Pattern class will represent a family of sentences. 
+Pattern will include a pattern consisting of several WordFamily objects. 
+For example, we can have the following pattern: (some name) ("is") ("a") (job title). 
+If we consider names "john", "patrick" and "alice", and job titles "lecturer", "builder" and "student", 
+then this pattern will match sentences such as "john is a student" and "alice is a builder".
+
+The constructor of the WordFamily class should take two parameters: the list of words in their initial form and the list of suffixes. 
+The constructor of the Pattern should take the name of the pattern and a list of WordFamily objects. 
+Pattern should also have a method recognise that takes a string as a parameter and returns True if the string matches the family of sentences.
+
+Assume no punctuation and no capitalisation. All the words are separated by single spaces.
+
+Finally, the Pattern class should have a class method recognise_all that takes two parameters: 
+a list of Pattern objects representing multiple patterns and a string representing a sentence. 
+The function should print the names of all the patterns that match the given sentence, one name in a line. 
+If none of the patterns matches the sentence, it should print "Unknown".
+'''
+
+class WordFamily():
+  def __init__(self, words, suffixes):
+    self.words = words 
+    self.suffixes = suffixes   
+  def arrange_word(self):
+    arranged = []
+    if len(self.words) == len(self.suffixes):
+      for i in range(len(self.words)):
+        arranged.append(self.words[i] + self.suffixes[i]) 
+      return arranged
+    elif len(self.words) > len(self.suffixes):
+      for i in range(len(self.words)):
+        arranged.append(self.words[i] + self.suffixes[0]) 
+      return arranged
+
+class Pattern(WordFamily):
+  def __init__(self, pattern_name, word_family_list):
+    self.pattern_name = pattern_name 
+    self.word_family_list = word_family_list      
+  def recognise(self, test = ""): 
+    list_test = test.split() 
+    arrange = []
+    for rec in self.word_family_list:
+      if type(rec) == WordFamily:
+        arrange.append(rec.arrange_word())
+    true_list = []
+    for i in range(len(list_test)):
+      if list_test[i] in arrange[i]:
+        true_list.append(True)
+      else:
+        true_list.append(False)
+    if False not in true_list:
+      return True
+    else:
+      return False
+  @classmethod
+  def recognise_all(cls, pattern_obj, sentence): 
+    pattern_l = []
+    for i in pattern_obj:
+      if type(i) == Pattern:
+        pattern_l.append(i.pattern_name)
+    pattern_separate = []
+    for m in pattern_obj:
+      if type(m) == Pattern:
+        pattern_obj_new =  []
+        for u in m.word_family_list: 
+          if type(u) == WordFamily:  
+            pattern_obj_new.append(u.arrange_word()) 
+        pattern_separate.append(pattern_obj_new)
+    list_sentence = sentence.split() 
+    word_name_true = []
+    pattern_position = []
+    patt_iterator = 0
+    for patt in pattern_separate:
+      if len(patt) == len(list_sentence):  
+        sentence_iter = 0
+        word_in_sentence_true = []
+        for word_combo in patt: 
+          if list_sentence[sentence_iter] in word_combo:
+              word_in_sentence_true.append(True)
+              sentence_iter += 1
+          else:
+              word_in_sentence_true.append(False)
+              sentence_iter += 1
+        if False not in word_in_sentence_true:
+          pattern_position.append(patt_iterator)   
+      patt_iterator += 1  
+    if len(pattern_position) == 0:
+      print("Unknown")
+    else:   
+      for result in pattern_position:
+        print(str(pattern_l[result]) + "\n")
+

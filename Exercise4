@@ -1,0 +1,331 @@
+'''
+You are given the code of class WordBase, see below. The WordBase class will be the root of a hierarchy of classes representing English words. The basic_form variable in class WordBase is supposed to be the basic form of the word represented by the object.
+
+    Implement a child class Noun. Nouns should have the following eligible forms:
+        Basic form, e.g. "cat", "store", "loss"
+        Plural form, e.g. "cats", "stores", "losses"
+
+    The rule for forming the plural form is as follows:
+        If the noun ends with "s", add "es".
+        If the noun ends with any other letter, add "s".
+
+    Not all the nouns are countable; some nouns in English do not have the plural form. Implement class UncountableNoun inheriting from Noun. The only eligible form of an UncountableNoun is the basic form.
+
+    There are some exceptions from the above cases, e.g. the plural of "mouse" is "mice". Implement a class IrregularNoun inheriting from Noun which takes two parameters in the contructor: the basic form and the plural form. These will be the only eligible forms of IrregularNoun. Note that it is allowed that both forms are the same, e.g. the plural of "aircraft" is "aircraft".
+
+    Implement class Verb inheriting from WordBase. Its constructor should take only one parameter – the basic form. The eligible forms of a verb are as follows:
+        The basic form
+        The basic form with added "s" (or "es" if the last letter in the basic form is "s")
+        The basic form with added "ing"; if the last letter of the basic form is "e", exclude it (e.g., "move" -> "moving")
+        The basic form with added "ed" (or "d" if the last letter in the basic form is "e")
+
+    Implement class IrregularVerb inheriting from Verb, to represent verbs such as go, eat, etc. The constructor of IrregularVerb should take three parameters: the basic form, past tense and past participle.
+
+    The basic and the past forms should be a compulsory parameters but the past participle should be optional. For example, one may want to write IrregularVerb("spend", "spent"), which should be interpreted as a word with basic form "spend", past form "spent" and past participle form "spent".
+
+    The eligible forms of IrregularVerb are as follows:
+        The basic form
+        The basic form with added "s" (or "es" if the last letter in the basic form is "s")
+        The basic form with added "ing"; if the last letter of the basic form is "e", exclude it (e.g., "move" -> "moving")
+        The past form
+        The past participle form
+
+    Implement class ToBe inheriting from Verb. Its constructor should not take any parameters. Its eligible forms are "be", "am", "is", "are", "was", "were", "been", and "being". The basic_form variable of this object should be "be".
+
+Now you have a hierarchy of classes conveniently representing English words and their eligible forms. Please note that these classes are not sufficient to represent all the Elglish words; some of the tests will introduce additional classes, and your system program should be able to handle objects of those new classes (inheriting from WordBase). This is an example of how software maintainance works.
+
+    Having a hierarchy of classes representing English words, you can now create a spellchecker. Write a class Spellchecker that will maintain a dictionary of known words (I do not mean the dictionary datatype!) and implement the following methods:
+
+        Constructor that does not take any parameters.
+
+        Method add_word that takes a single parameter: an object of a class inheriting from WordBase. This should add the word to the dictionary of known words.
+
+        Method delete_word that takes two parameters: the basic form of a word and a class. The method should delete all the words from the dictionary of known words that have the given basic form and are of the given class (or a subclass of the given class). For example, if the dictionary includes an irregular verb "put", calling my_spellcheker.delete_word("put", Verb) should delete it, but calling my_spellcheker.delete_word("put", Noun) should not delete it. Also, if the dictionary includes an irregular verb "put" and a regular verb "put" then my_spellcheker.delete_word("put", Verb) should delete both of them.
+
+        Method is_correct_sentence that takes a single string parameter (the sentence) and returns a Boolean: True if every word in the sentence is known and False otherwise. Assume that a word is known if it is one of the eligible forms of one of the known words.
+
+        Method find_matches that takes two parameters: a word (a string) and a list of objects inheriting from WordComparator (see the provided code). The method should return a list of strings. Specifically, out of all the elegible forms of all the known words, it should return those elegible forms that match the given word according to at least one of the given WordComparator objects. For example, if the known words are nouns 'cat' and 'dog', and the comparator only accepts exact matches, then if should return ["cats"] if the given word is "cats".
+
+        find_matches is allowed to return several identical strings. For example, assume that the list of known words includes verb "ride" and noun "ride". Then find_matches for the word "ride", with appropriate comparator, may return ["ride", "ride"], however ["ride"] will also be acceptable.
+
+        More on word comparators later.
+
+        Method autocorrect_word that takes two parameters: a word (a string) and a list of WordComparator objects. The method should perform as follows:
+
+            Find all the eligible forms of all the known words that match the given word according to the first given WordComparator object. If there are such matches, sort them alphabetically and return the first of them. E.g., if the matches are "pat", "cab" and "cat", you should return "cab".
+
+            If there are no such matches, repeat the process for the second given comparator object.
+
+            If there are still no matches, repeat the process for the third given comparator object, etc.
+
+            ...
+
+            If no matches found for any of the given comparator objects, return the original word.
+
+            The idea is that the list of comparator objects will usually begin with comparators that only allow small mistakes and end with comparators that allow bigger mistakes. Then the autocorrect_word method will find a match that is closest to the given word. E.g., given appropriate comparators, it would autocorrect "pleese" as "please" and not as "cheese".
+
+        Method autocorrect_sentence that takes two parameters: a sentence (a string) and a list of WordComparator objects. The method should 'autocorrect' each word in the sentence according to the logic of the autocorrect_word method. It should return a new sentence where each word is the autocorrected version of the corresponding word in the original sentence. For example, with appropriate comparators, it will return "cats are lovely" given "cads are lovley".
+
+Each comparator object (of a class inheriting from WordComparator, see code below) defines some logic of comparing words. The match method takes two words (strings) as parameters and returns True if the two words are similar according to the logic of this comparator (and False otherwise).
+
+    Implement IdenticalWordComparator class (a subclass of WordComparator) that matches only the words that are to-the-letter identical. E.g., it should match "cat" and "cat" but should not match "cat" and "cab".
+
+    Implement OneSymbolDiffComparator class (a subclass of WordComparator) that matches only the words that are different in exactly one letter. E.g., it should match "cat" and "cab" but should not match any of "cat" and "cate", "cat" and "but", or "cat" and "cat".
+
+    Implement SwapTwoSymbolsComparator class (a subclass of WordComparator) that matches only the words where two consecutive letters are swapped. For example, it should match "cheese" and "cheees", or "cheese and "hceese", but it should not match "cheese" and "echese", or "cheese" and "cheese" (if the word has a double letter, such as "ee" in "cheese", ignore it so that the comparator would not match the word itself).
+
+Notes:
+
+    Assume that the sentences do not contain any punctuation marks and the words are space-separated.
+    Assume that all the words in the dictionary and in the sentences are lower-case.
+    The rules for producing plural and other forms given in the exercise do not reflect all the English rules. You should not implement any rules not mentioned above. However, the system is flexible enough to accommodate any exceptions and be extended with additional rules.
+    Your code should work correctly with other word comparators that might be implemented by someone else.
+    You should not change the code of the WordBase and WordComparator classes and you do not need to submit it; the implementations of these two classes will be included in the automated tests.
+
+'''
+
+class Noun(WordBase):
+  def __init__(self, basic_form, plural_form = ""):
+    super().__init__(basic_form)
+    self.plural_form = plural_form 
+  def __str__(self):
+    return f'Singular form is: {self.basic_form} and plural form is {self.plural_form}' 
+  def get_forms(self):
+    noun_forms = []
+    formOne = self.plural_form = self.basic_form + "es"
+    formTwo = self.plural_form = self.basic_form + "s"
+    formOne if self.basic_form[-1] == "s" else formTwo
+    noun_forms.append(self.basic_form)
+    noun_forms.append(self.plural_form)
+    return noun_forms 
+
+class UncountableNoun(Noun):
+  def __init__(self, basic_form):
+    super().__init__(basic_form)
+  def get_forms(self):
+    unoun_forms = []
+    unoun_forms.append(self.basic_form)
+    return unoun_forms
+
+class IrregularNoun(Noun):
+  def __init__(self, basic_form, plural_form = ""):
+    super().__init__(basic_form)
+    self.plural_form = plural_form
+  def get_forms(self):
+    inoun_forms = []
+    inoun_forms.append(self.basic_form)
+    inoun_forms.append(self.plural_form)
+    return inoun_forms
+
+class Verb(WordBase):
+  def __init__(self, basic_form):
+    super().__init__(basic_form)
+  
+  def get_forms(self):
+    verb_forms = []
+
+    verb_forms.append(self.basic_form)
+
+    formS1 = self.basic_form + "es"
+    formS2 = self.basic_form + "s"
+    verb_s = formS1 if self.basic_form[-1] == "s" else formS2
+    verb_forms.append(verb_s)
+
+    formI1 = self.basic_form[:-1] + "ing"
+    formI2 = self.basic_form + "ing"
+    verb_I = formI1 if self.basic_form[-1] == "e" else formI2
+    verb_forms.append(verb_I)
+
+    formE1 = self.basic_form + "d"
+    formE2 = self.basic_form + "ed"
+    verb_E = formE1 if self.basic_form[-1] == "e" else formE2
+    verb_forms.append(verb_E)
+
+    return verb_forms
+
+class IrregularVerb(Verb):
+  def __init__(self, basic_form, past_tense, past_participle = None):
+    super().__init__(basic_form)
+    self.past_tense = past_tense
+    self.past_participle = past_participle
+
+  def get_forms(self):
+    iverb_forms = []
+
+    iverb_forms.append(self.basic_form)
+
+    formIS1 = self.basic_form + "es"
+    formIS2 = self.basic_form + "s"
+    verb_s = formIS1 if self.basic_form[-1] == "s" else formIS2
+    iverb_forms.append(verb_s)
+
+    formII1 = self.basic_form[:-1] + "ing"
+    formII2 = self.basic_form + "ing"
+    verb_I = formII1 if self.basic_form[-1] == "e" else formII2
+    iverb_forms.append(verb_I)
+
+    iverb_forms.append(self.past_tense)
+    iverb_forms.append(self.past_participle)
+
+    return iverb_forms
+  
+class ToBe(Verb):
+  def __init__(self):
+    self.basic_form = "be"
+  
+  def get_forms(self):
+    form_ToBe = []
+    form_ToBe.extend([self.basic_form, "am", "is", "are", "was", "were", "been", "beeing"])
+    return form_ToBe
+
+class Spellchecker():
+  known_words = []
+  class_types = []
+  def __init__(self):
+    pass
+
+  def add_word(self, class_object):
+    Spellchecker.known_words.append(class_object.get_forms())
+    Spellchecker.class_types.append(type(class_object))
+    return Spellchecker.known_words
+
+  def delete_word(self, basic_form, class_input):
+    i = 0
+    for types in Spellchecker.class_types:
+      if (types == class_input or issubclass(types, class_input) == True) and (basic_form in Spellchecker.known_words[i]):
+        Spellchecker.known_words.pop(i)
+        Spellchecker.class_types.pop(i)
+      i += 1   
+  
+  def is_correct_sentence(self, the_sentence):
+    match_result = []
+    new_sentence = the_sentence.split()
+    for word in new_sentence:
+      for check in Spellchecker.known_words:
+        if word in check:
+          match_result.append(True)
+          break
+        else:
+          match_result.append(False)
+    #if its got two trues in the case of dog barks then return True
+    if len(new_sentence) == match_result.count(True):
+      return True
+    else:
+      return False
+    
+  def find_matches(self, a_word, word_Comparator):
+    result_list = []
+    for typ in word_Comparator:
+      for i in Spellchecker.known_words:
+        for word in i:
+          if typ.match(a_word, word) == True: 
+            result_list.append(word)
+    return result_list
+ 
+  def autocorrect_word(self, a_word2, word_Comparator2):
+    for obj in word_Comparator2:
+      unorg_word = []
+      org_word = []
+      for m in Spellchecker.known_words:
+        for word_s in m:
+          if obj.match(a_word2, word_s) == True:
+            unorg_word.append(word_s)
+      if len(unorg_word) != 0:
+        org_word = sorted(unorg_word)
+        return org_word[0]
+    return a_word2  
+  
+  def autocorrect_sentence(self, a_sentence, word_Comparator3):
+    single = a_sentence.split()
+    new_sentence_l = []
+    for single_word in single:
+      new_sentence_l.append(self.autocorrect_word(single_word, word_Comparator3))
+    new_sentence = ' '.join(new_sentence_l)
+    return new_sentence
+  
+class IdenticalWordComparator(WordComparator):
+  def __init__(self):
+    pass
+  def match(self, word1, word2):
+    if word2 == None:
+      return False
+    else:
+      return True if word1 == word2 else False
+
+class OneSymbolDiffComparator(WordComparator):
+  def __init__(self):
+    pass
+  def match(self, word1, word2):
+    record = []
+    if word2 == None:
+      return False
+    elif len(word1) == len(word2):
+      for num in range(len(word1)):
+        if word1[num] == word2[num]:
+          record.append(True) 
+        else: 
+          record.append(False)
+      return True if record.count(False) == 1 else False
+    else:
+      return False
+    
+class SwapTwoSymbolsComparator(WordComparator):
+  def __init__(self):
+    pass
+  def match(self, word1, word2): 
+    prev_chr = ""
+    iter1 = 0
+    iter2 = 2
+    if word2 == None:
+      return False
+    elif len(word1) == len(word2):
+      for swapper in range(len(word1)):
+        if word1[iter1:iter2] != word2[iter1:iter2]:
+          if word1[iter1] == word2[iter2-1] and word1[iter2-1] == word2[iter1]:
+            return True  
+          else:
+            return False
+    else:
+      return False
+      
+'''
+TESTING
+
+print(isinstance(Noun("cat"), WordBase))
+print(isinstance(Verb("move"), WordBase))
+print(set(Noun("cat").get_forms()) == {"cat", "cats"})
+print(set(Verb("move").get_forms()) == {"move", "moving", "moved", "moves"})
+print(set(IrregularVerb("go", "went", "gone").get_forms()) == {"go", "went", "gone", "going", "gos"})
+print("been" in ToBe().get_forms())
+
+print("\n")	
+
+checker = Spellchecker()
+checker.add_word(Noun("dog"))
+checker.add_word(Verb("bark"))
+print(checker.is_correct_sentence("dog barks"))
+print(checker.is_correct_sentence("dogs bark"))
+checker.delete_word("dog", Noun)
+print(checker.is_correct_sentence("dog barks"))
+checker.add_word(Verb("bark"))
+print(checker.is_correct_sentence("cat barked"))
+
+print("\n")
+
+checker = Spellchecker()
+checker.add_word(Noun("dog"))
+checker.add_word(Verb("bark"))
+print(set(checker.find_matches("cat", [IdenticalWordComparator()])) == set())
+print(set(checker.find_matches("dogs", [IdenticalWordComparator()])) == {"dogs"})
+print(set(checker.find_matches("barked", [IdenticalWordComparator()])) == {"barked"})
+
+print("\n")
+
+checker = Spellchecker()
+checker.add_word(Noun("dog")) 
+checker.add_word(Verb("bark"))
+checker.add_word(IrregularVerb("spend", "spent"))
+print(set(checker.find_matches("burk", [IdenticalWordComparator(), OneSymbolDiffComparator()])) == {"bark"})
+print(set(checker.find_matches("barky", [IdenticalWordComparator(), OneSymbolDiffComparator()])) == {"barks"})
+print(set(checker.find_matches("spend", [IdenticalWordComparator(), OneSymbolDiffComparator()])) == {"spend", "spent"})
+'''
